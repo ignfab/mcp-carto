@@ -6,11 +6,13 @@ import {
   type McpUiHostContext,
 } from "@modelcontextprotocol/ext-apps";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { getTopLeft, getWidth } from "ol/extent.js";
 import Map from "ol/Map.js";
 import View from "ol/View.js";
 import TileLayer from "ol/layer/Tile.js";
-import OSM from "ol/source/OSM.js";
-import { fromLonLat } from "ol/proj.js";
+import { fromLonLat, get as getProjection } from "ol/proj.js";
+import WMTS from "ol/source/WMTS.js";
+import WMTSTileGrid from "ol/tilegrid/WMTS.js";
 import "ol/ol.css";
 import "./global.css";
 import "./mcp-app.css";
@@ -26,8 +28,9 @@ function parseViewArgs(
   const lat = args.lat;
   const zoom = args.zoom;
   if (typeof lon !== "number" || typeof lat !== "number") return null;
-  const z =
+  const zRaw =
     typeof zoom === "number" && Number.isFinite(zoom) ? zoom : 12;
+  const z = Math.min(19, Math.max(0, Math.round(zRaw)));
   return { lon, lat, zoom: z };
 }
 
@@ -43,28 +46,62 @@ function parseViewFromResult(
 
 let map: Map | null = null;
 
+/** Plan IGN v2 — même paramètres que GetTile Géoplateforme (PM_0_19, image/png). */
+function createPlanIgnV2Source(): WMTS {
+  const projection = getProjection("EPSG:3857")!;
+  const extent = projection.getExtent();
+  const size = getWidth(extent) / 256;
+  const resolutions: number[] = [];
+  const matrixIds: string[] = [];
+  for (let z = 0; z <= 19; z++) {
+    resolutions.push(size / 2 ** z);
+    matrixIds.push(String(z));
+  }
+  return new WMTS({
+    url: "https://data.geopf.fr/wmts",
+    layer: "GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2",
+    matrixSet: "PM_0_19",
+    format: "image/png",
+    projection,
+    tileGrid: new WMTSTileGrid({
+      origin: getTopLeft(extent),
+      resolutions,
+      matrixIds,
+      tileSize: [256, 256],
+    }),
+    style: "normal",
+    crossOrigin: "anonymous",
+    attributions:
+      '© <a href="https://www.ign.fr/" target="_blank" rel="noreferrer">IGN</a> · Géoplateforme',
+    wrapX: true,
+  });
+}
+
 function ensureMap(): Map {
   if (map) return map;
   map = new Map({
     target: "map",
     layers: [
       new TileLayer({
-        source: new OSM(),
+        source: createPlanIgnV2Source(),
       }),
     ],
     view: new View({
       center: fromLonLat([2.3522, 48.8566]),
       zoom: 12,
+      maxZoom: 19,
+      minZoom: 0,
     }),
   });
   return map;
 }
 
 function applyView(lon: number, lat: number, zoom: number) {
+  const z = Math.min(19, Math.max(0, zoom));
   const m = ensureMap();
   m.getView().setCenter(fromLonLat([lon, lat]));
-  m.getView().setZoom(zoom);
-  coordsLabel.textContent = `lon ${lon.toFixed(5)} · lat ${lat.toFixed(5)} · zoom ${zoom}`;
+  m.getView().setZoom(z);
+  coordsLabel.textContent = `lon ${lon.toFixed(5)} · lat ${lat.toFixed(5)} · zoom ${z}`;
   m.updateSize();
 }
 
@@ -86,7 +123,7 @@ function handleHostContextChanged(ctx: McpUiHostContext) {
   }
 }
 
-const app = new App({ name: "Carte OSM OpenLayers", version: "1.0.0" });
+const app = new App({ name: "Carte Plan IGN v2", version: "1.0.0" });
 
 app.onteardown = async () => {
   if (map) {

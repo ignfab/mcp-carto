@@ -17,13 +17,13 @@ const DIST_DIR = import.meta.filename.endsWith(".ts")
   ? path.join(import.meta.dirname, "dist")
   : import.meta.dirname;
 
-const resourceUri = "ui://osm-openlayers/mcp-app.html";
+const resourceUri = "ui://mcp-carte-ign/mcp-app.html";
 
 const cspMeta = {
   ui: {
     csp: {
-      connectDomains: ["https://*.openstreetmap.org"],
-      resourceDomains: ["https://*.openstreetmap.org"],
+      connectDomains: ["https://data.geopf.fr"],
+      resourceDomains: ["https://data.geopf.fr"],
     },
   },
 };
@@ -42,10 +42,12 @@ const inputSchema = {
   zoom: z
     .number()
     .min(0)
-    .max(20)
+    .max(19)
     .optional()
     .default(12)
-    .describe("Niveau de zoom OpenLayers (0 = monde, ~19 = rue)"),
+    .describe(
+      "Niveau de zoom (0 = monde, 19 = max pour Plan IGN v2 / PM_0_19)",
+    ),
 };
 
 const outputSchema = z.object({
@@ -56,7 +58,7 @@ const outputSchema = z.object({
 
 export function createServer(): McpServer {
   const server = new McpServer({
-    name: "OSM OpenLayers Map",
+    name: "mcp-carte-ign",
     version: "1.0.0",
   });
 
@@ -85,18 +87,18 @@ export function createServer(): McpServer {
 
   registerAppTool(
     server,
-    "show_osm_map",
+    "show_plan_ign_map",
     {
-      title: "Afficher une carte OSM",
+      title: "Afficher la carte Plan IGN v2",
       description:
-        "Affiche une carte interactive OpenLayers avec tuiles OpenStreetMap, centrée sur longitude, latitude et niveau de zoom donnés.",
+        "Affiche une carte interactive OpenLayers avec la couche WMTS Plan IGN v2 (GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2, PM_0_19) de la Géoplateforme (data.geopf.fr), centrée sur longitude, latitude et zoom.",
       inputSchema,
       outputSchema,
       _meta: { ui: { resourceUri } },
     },
     async ({ lon, lat, zoom }): Promise<CallToolResult> => {
       const zLevel = zoom ?? 12;
-      const text = `Carte OSM : lon ${lon.toFixed(5)}, lat ${lat.toFixed(5)}, zoom ${zLevel}`;
+      const text = `Plan IGN v2 : lon ${lon.toFixed(5)}, lat ${lat.toFixed(5)}, zoom ${zLevel}`;
       return {
         content: [{ type: "text", text }],
         structuredContent: { lon, lat, zoom: zLevel },

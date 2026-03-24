@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  min-height: 280px;
+  min-height: 400px;
 }
 
 .header {
@@ -26,11 +26,11 @@
 
 .map {
   flex: 1 1 auto;
-  min-height: 200px;
+  min-height: 400px;
   width: 100%;
 }
 
-/* OpenLayers contrôles */
+/* Contrôles OpenLayers */
 .map .ol-control button {
   background-color: light-dark(#fff, #1f2937);
   color: var(--color-text-primary);

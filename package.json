@@ -1,9 +1,9 @@
 {
-  "name": "mcp-osm-openlayers-map",
+  "name": "mcp-carte-ign",
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "description": "MCP App : carte OpenLayers avec fond OpenStreetMap (lon, lat, zoom)",
+  "description": "MCP App : carte OpenLayers avec fond Plan IGN v2 (WMTS Géoplateforme)",
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc --noEmit -p tsconfig.json && cross-env INPUT=mcp-app.html vite build && tsc -p tsconfig.build.json",
