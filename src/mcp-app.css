@@ -1,0 +1,37 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 280px;
+}
+
+.header {
+  flex: 0 0 auto;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid light-dark(#e2e8f0, #374151);
+}
+
+.title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.coords {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  opacity: 0.85;
+  font-variant-numeric: tabular-nums;
+}
+
+.map {
+  flex: 1 1 auto;
+  min-height: 200px;
+  width: 100%;
+}
+
+/* OpenLayers contrôles */
+.map .ol-control button {
+  background-color: light-dark(#fff, #1f2937);
+  color: var(--color-text-primary);
+}
