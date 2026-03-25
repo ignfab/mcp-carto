@@ -101,3 +101,4 @@ The UI resource URI is `ui://mcp-carte-ign/mcp-app.html`.
 ## Resources
 
 - [MCP Apps overview](https://modelcontextprotocol.io/extensions/apps/overview)
+- [ignfab/demo-geocontext - ol-simple-map](https://github.com/ignfab/demo-geocontext/tree/main/front#principe) : the first attempt with more params
