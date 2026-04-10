@@ -86,6 +86,20 @@ Call this tool to open or update the map view.
 | `lon`    | number  | Longitude in decimal degrees (WGS84), −180…180   |
 | `lat`    | number  | Latitude in decimal degrees (WGS84), −90…90      |
 | `zoom`   | number? | Optional. Zoom level **0–19** (default **12**). 19 is the maximum for Plan IGN v2 (`PM_0_19`). |
+| `data_url` | string? | Optional. URL of a GeoJSON file to load on top of the Plan IGN base layer. |
+
+When `data_url` is provided, the app fetches the GeoJSON, displays it as a vector overlay, and automatically fits the map view to the data extent.
+
+Example:
+
+```json
+{
+  "lon": 6.869322,
+  "lat": 45.923713,
+  "zoom": 12,
+  "data_url": "https://data.geopf.fr/wfs?service=WFS&request=GetFeature&typeName=BDTOPO_V3%3Abatiment&outputFormat=application%2Fjson&cql_filter=DWITHIN%28geometrie%2CPoint%2845.923713+6.869322%29%2C500%2Cmeters%29"
+}
+```
 
 The UI resource URI is `ui://mcp-carte-ign/mcp-app.html`.
 

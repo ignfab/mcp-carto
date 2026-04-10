@@ -48,12 +48,18 @@ const inputSchema = {
     .describe(
       "Niveau de zoom (0 = monde, 19 = max pour Plan IGN v2 / PM_0_19)",
     ),
+  data_url: z
+    .string()
+    .url()
+    .optional()
+    .describe("URL d'un GeoJSON a charger sur la carte (astuce : utiliser gpf_get_features de geocontext avec result_type=url"),
 };
 
 const outputSchema = z.object({
   lon: z.number(),
   lat: z.number(),
   zoom: z.number(),
+  data_url: z.string().optional(),
 });
 
 export function createServer(): McpServer {
@@ -90,18 +96,24 @@ export function createServer(): McpServer {
     "show_plan_ign_map",
     {
       title: "Afficher la carte Plan IGN v2",
-      description:
-        "Affiche une carte interactive OpenLayers avec la couche WMTS Plan IGN v2 (GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2, PM_0_19) de la Géoplateforme (data.geopf.fr), centrée sur longitude, latitude et zoom.",
+      description: `Affiche une carte interactive OpenLayers avec 
+      la couche WMTS Plan IGN v2 (GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2, PM_0_19) de la Géoplateforme (data.geopf.fr), 
+      centrée sur longitude, latitude et zoom, 
+      et des données à partir d'une URL au format GeoJSON (optionnel).
+      `,
       inputSchema,
       outputSchema,
       _meta: { ui: { resourceUri } },
     },
-    async ({ lon, lat, zoom }): Promise<CallToolResult> => {
+    async ({ lon, lat, zoom, data_url }): Promise<CallToolResult> => {
       const zLevel = zoom ?? 12;
-      const text = `Plan IGN v2 : lon ${lon.toFixed(5)}, lat ${lat.toFixed(5)}, zoom ${zLevel}`;
+      const dataText = data_url
+        ? `, GeoJSON ${data_url}`
+        : ", sans GeoJSON";
+      const text = `Plan IGN v2 : lon ${lon.toFixed(5)}, lat ${lat.toFixed(5)}, zoom ${zLevel}${dataText}`;
       return {
         content: [{ type: "text", text }],
-        structuredContent: { lon, lat, zoom: zLevel },
+        structuredContent: { lon, lat, zoom: zLevel, data_url },
         _meta: { viewUUID: randomUUID() },
       };
     },

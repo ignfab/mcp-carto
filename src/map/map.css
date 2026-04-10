@@ -1,0 +1,14 @@
+.ol-popup.ol-fixed {
+  z-index: 99;
+  left: .5em!important;
+  right: unset!important;
+}
+.ol-popup .ol-popupfeature table {
+  max-width: 30em;
+  max-height: 15em;
+  display: block;
+  overflow: auto;
+}
+.ol-popup .ol-popupfeature table .ol-label {
+  max-width: 15em;
+}
