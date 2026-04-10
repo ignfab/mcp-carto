@@ -18,6 +18,12 @@
   font-weight: 600;
 }
 
+.description {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  opacity: 0.9;
+}
+
 .coords {
   margin: 0.25rem 0 0;
   font-size: 0.8125rem;

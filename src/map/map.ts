@@ -137,12 +137,24 @@ async function applyView(
   lat: number,
   zoom: number,
   data_url?: string,
+  title?: string,
+  description?: string,
 ) {
   const coordsLabel = document.getElementById("coords-label")!;
+  const titleLabel = document.querySelector(".header h1") as HTMLElement | null;
+  const descriptionLabel = document.getElementById("description-label");
   const z = Math.min(19, Math.max(0, zoom));
   const m = getMap();
   m.getView().setCenter(fromLonLat([lon, lat]));
   m.getView().setZoom(z);
+
+  if (titleLabel) {
+    titleLabel.textContent = title || "Carte Plan IGN v2";
+  }
+  if (descriptionLabel) {
+    descriptionLabel.textContent =
+      description || "Affichage de la couche Plan IGN v2";
+  }
 
   if (!data_url) {
     clearDataLayer();

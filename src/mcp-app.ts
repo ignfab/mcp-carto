@@ -17,25 +17,55 @@ const mainEl = document.querySelector(".main") as HTMLElement;
 
 function parseViewArgs(
   args: Record<string, unknown> | undefined,
-): { lon: number; lat: number; zoom: number; data_url?: string } | null {
+): {
+  lon: number;
+  lat: number;
+  zoom: number;
+  data_url?: string;
+  title?: string;
+  description?: string;
+} | null {
   if (!args) return null;
   const lon = args.lon;
   const lat = args.lat;
   const zoom = args.zoom;
   const dataUrl = args.data_url;
+  const title = args.title;
+  const description = args.description;
   if (typeof lon !== "number" || typeof lat !== "number") return null;
   const zRaw =
     typeof zoom === "number" && Number.isFinite(zoom) ? zoom : 12;
   const z = Math.min(19, Math.max(0, Math.round(zRaw)));
   const data_url = typeof dataUrl === "string" ? dataUrl : undefined;
-  return { lon, lat, zoom: z, data_url };
+  return {
+    lon,
+    lat,
+    zoom: z,
+    data_url,
+    title: typeof title === "string" ? title : undefined,
+    description: typeof description === "string" ? description : undefined,
+  };
 }
 
 function parseViewFromResult(
   result: CallToolResult,
-): { lon: number; lat: number; zoom: number; data_url?: string } | null {
+): {
+  lon: number;
+  lat: number;
+  zoom: number;
+  data_url?: string;
+  title?: string;
+  description?: string;
+} | null {
   const sc = result.structuredContent as
-    | { lon?: unknown; lat?: unknown; zoom?: unknown; data_url?: unknown }
+    | {
+        lon?: unknown;
+        lat?: unknown;
+        zoom?: unknown;
+        data_url?: unknown;
+        title?: unknown;
+        description?: unknown;
+      }
     | undefined;
   if (!sc) return null;
   return parseViewArgs(sc as Record<string, unknown>);
@@ -74,14 +104,14 @@ app.onteardown = async () => {
 app.ontoolinput = (params) => {
   const v = parseViewArgs(params.arguments);
   if (v) {
-    void applyView(v.lon, v.lat, v.zoom, v.data_url);
+    void applyView(v.lon, v.lat, v.zoom, v.data_url, v.title, v.description);
   }
 };
 
 app.ontoolresult = (result) => {
   const v = parseViewFromResult(result);
   if (v) {
-    void applyView(v.lon, v.lat, v.zoom, v.data_url);
+    void applyView(v.lon, v.lat, v.zoom, v.data_url, v.title, v.description);
   }
 };
 

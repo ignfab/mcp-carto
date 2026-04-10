@@ -29,6 +29,8 @@ const cspMeta = {
 };
 
 const inputSchema = {
+  title: z.string().optional().default("Carte IGN").describe("Titre de la vue (optionnel)"),
+  description: z.string().describe("Description de la vue (optionnel)"),
   lon: z
     .number()
     .min(-180)
@@ -55,12 +57,13 @@ const inputSchema = {
     .describe("URL d'un GeoJSON a charger sur la carte (astuce : utiliser gpf_get_features de geocontext avec result_type=url"),
 };
 
-const outputSchema = z.object({
-  lon: z.number(),
-  lat: z.number(),
-  zoom: z.number(),
-  data_url: z.string().optional(),
-});
+const outputSchema = inputSchema;
+// const outputSchema = z.object({
+//   lon: z.number(),
+//   lat: z.number(),
+//   zoom: z.number(),
+//   data_url: z.string().optional(),
+// });
 
 export function createServer(): McpServer {
   const server = new McpServer({
@@ -105,7 +108,7 @@ export function createServer(): McpServer {
       outputSchema,
       _meta: { ui: { resourceUri } },
     },
-    async ({ lon, lat, zoom, data_url }): Promise<CallToolResult> => {
+    async ({ lon, lat, zoom, data_url, title, description }): Promise<CallToolResult> => {
       const zLevel = zoom ?? 12;
       const dataText = data_url
         ? `, GeoJSON ${data_url}`
@@ -113,7 +116,7 @@ export function createServer(): McpServer {
       const text = `Plan IGN v2 : lon ${lon.toFixed(5)}, lat ${lat.toFixed(5)}, zoom ${zLevel}${dataText}`;
       return {
         content: [{ type: "text", text }],
-        structuredContent: { lon, lat, zoom: zLevel, data_url },
+        structuredContent: { lon, lat, zoom: zLevel, data_url, title, description },
         _meta: { viewUUID: randomUUID() },
       };
     },
