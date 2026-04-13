@@ -1,10 +1,10 @@
-import { getTopLeft, getWidth, isEmpty } from "ol/extent.js";
+import { isEmpty } from "ol/extent.js";
 import GeoJSON from "ol/format/GeoJSON.js";
 import Map from "ol/Map.js";
 import View from "ol/View.js";
 
 import VectorLayer from "ol/layer/Vector.js";
-import { fromLonLat, get as getProjection } from "ol/proj.js";
+import { fromLonLat } from "ol/proj.js";
 import VectorSource from "ol/source/Vector.js";
 import CircleStyle from "ol/style/Circle.js";
 import Fill from "ol/style/Fill.js";
@@ -108,7 +108,6 @@ function getMap(): Map {
 function getLayer(m: Map): VectorLayer<VectorSource> {
   if (dataLayer) return dataLayer;
   dataLayer = new VectorLayer({
-    title: "Données GeoJSON",
     source: new VectorSource(),
     style: new Style({
       fill: new Fill({ color: "rgba(230, 57, 70, 0.22)" }),
@@ -120,6 +119,7 @@ function getLayer(m: Map): VectorLayer<VectorSource> {
       }),
     }),
   });
+  dataLayer.set("title", "Données GeoJSON");
   m.addLayer(dataLayer);
   return dataLayer;
 }
@@ -160,8 +160,8 @@ async function loadGeoJsonFromUrl(m: Map, dataUrl: string): Promise<boolean> {
     duration: 250,
   });
 
-  layer.addFilter(new Colorize({ grayscale: 100 }));
-  map.getTargetElement().dataset.hasData = "true";
+  layer.addFilter(new Colorize({ grayscale: 100 } as any) as any);
+  m.getTargetElement().dataset.hasData = "true";
 
   return true;
 }
