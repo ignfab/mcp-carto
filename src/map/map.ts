@@ -15,6 +15,7 @@ import LayerSwitcher from "ol-ext/control/LayerSwitcher.js";
 import Colorize from "ol-ext/filter/CanvasFilter.js";
 import Select from "ol/interaction/Select.js";
 import Popup from "ol-ext/overlay/PopupFeature.js";
+import Button from "ol-ext/control/Button.js";
 import { click } from "ol/events/condition.js";
 
 import FileSaver from "file-saver";
@@ -28,6 +29,10 @@ let map: Map | null = null;
 let dataLayer: VectorLayer<VectorSource> | null = null;
 const layer = new Geoportail({ layer: 'GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2' });
 
+/** Get the current map
+ * If not created yet, create it with the base layer and controls
+ * @return the OpenLayers Map instance
+ */
 function getMap(): Map {
   if (map) return map;
 
@@ -43,7 +48,25 @@ function getMap(): Map {
   });
   // Layerswitcher
   const switcher = new LayerSwitcher();
-  // Add buttons in switcher
+  map.addControl(switcher);
+  // Download button for vector layers
+  const loaderBt = new Button({
+    className: "ol-download",
+    title: "Télécharger les données affichées",
+    handleClick: () => {
+      const source = getLayer(map as Map).getSource();
+      if (!source || !source.getFeatures) return;
+      const features = source.getFeatures();
+      if (features.length === 0) return;
+      const geoJson = new GeoJSON().writeFeatures(features, {
+        featureProjection: "EPSG:3857",
+      });
+      const blob = new Blob([geoJson], { type: "application/json" });
+      FileSaver.saveAs(blob, "data.geojson");
+    }
+  });
+  map.addControl(loaderBt);
+  /** /
   switcher.on("drawlist", (e:any) => {
     const layer = e.layer;
     if (layer instanceof VectorLayer) {
@@ -63,7 +86,7 @@ function getMap(): Map {
       e.li.querySelector(".ol-layerswitcher-buttons")?.appendChild(btn);
     }
   });
-  map.addControl(switcher);
+  /**/
   // Popup
   const select = new Select({ condition: click  });
   map.addInteraction(select);
@@ -77,7 +100,12 @@ function getMap(): Map {
   return map;
 }
 
-function ensureDataLayer(m: Map): VectorLayer<VectorSource> {
+/** Get the layer
+ * If not created yet, create it and add to the map
+ * @param m OpenLayers Map instance
+ * @return the VectorLayer for displaying GeoJSON data
+ */
+function getLayer(m: Map): VectorLayer<VectorSource> {
   if (dataLayer) return dataLayer;
   dataLayer = new VectorLayer({
     title: "Données GeoJSON",
@@ -96,10 +124,16 @@ function ensureDataLayer(m: Map): VectorLayer<VectorSource> {
   return dataLayer;
 }
 
+/** Clear the data layer */
 function clearDataLayer() {
   dataLayer?.getSource()?.clear(true);
 }
 
+/** Load GeoJSON from URL and display on the map, then fit view to data extent
+ * @param m OpenLayers Map instance
+ * @param dataUrl URL to the GeoJSON file
+ * @returns true if data loaded and displayed, false if no features or invalid extent
+ */
 async function loadGeoJsonFromUrl(m: Map, dataUrl: string): Promise<boolean> {
   const response = await fetch(dataUrl, { mode: "cors" });
   if (!response.ok) {
@@ -107,7 +141,7 @@ async function loadGeoJsonFromUrl(m: Map, dataUrl: string): Promise<boolean> {
   }
 
   const geoJson = await response.json();
-  const source = ensureDataLayer(m).getSource();
+  const source = getLayer(m).getSource();
   if (!source) return false;
 
   source.clear(true);
@@ -127,11 +161,19 @@ async function loadGeoJsonFromUrl(m: Map, dataUrl: string): Promise<boolean> {
   });
 
   layer.addFilter(new Colorize({ grayscale: 100 }));
+  map.getTargetElement().dataset.hasData = "true";
 
   return true;
 }
 
-
+/** New view
+ * @param lon longitude
+ * @param lat latitude
+ * @param zoom zoom level 
+ * @param data_url optional url to a GeoJSON file to load and display on the map
+ * @param title optional title to display in the header
+ * @param description optional description to display below the header
+ */
 async function applyView(
   lon: number,
   lat: number,

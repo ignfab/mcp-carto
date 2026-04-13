@@ -12,3 +12,23 @@
 .ol-popup .ol-popupfeature table .ol-label {
   max-width: 15em;
 }
+
+.ol-download {
+  left: 2.5em;
+  top: 0.5em;
+  overflow: hidden;
+  cursor: pointer;
+  display: none;
+}
+[data-has-data] .ol-download {
+  display: block;
+}
+.ol-download button:before {
+  content: "\u21E9";
+  content: "⬇️";
+  font-size: 1.5em;
+  position: absolute;
+	left:50%;
+	top: 50%;
+	transform: translate(-50%,-50%);
+}
