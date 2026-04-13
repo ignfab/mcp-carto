@@ -12,7 +12,7 @@ import Stroke from "ol/style/Stroke.js";
 import Style from "ol/style/Style.js";
 import Geoportail from "ol-ext/layer/Geoportail.js";
 import LayerSwitcher from "ol-ext/control/LayerSwitcher.js";
-import Colorize from "ol-ext/filter/Colorize.js";
+import Colorize from "ol-ext/filter/CanvasFilter.js";
 import Select from "ol/interaction/Select.js";
 import Popup from "ol-ext/overlay/PopupFeature.js";
 import { click } from "ol/events/condition.js";
@@ -126,7 +126,7 @@ async function loadGeoJsonFromUrl(m: Map, dataUrl: string): Promise<boolean> {
     duration: 250,
   });
 
-  layer.addFilter(new Colorize('grayscale'));
+  layer.addFilter(new Colorize({ grayscale: 100 }));
 
   return true;
 }
