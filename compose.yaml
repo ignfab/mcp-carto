@@ -1,0 +1,12 @@
+services:
+  mcp:
+    container_name: mcp-carte-ign
+    build:
+      context: .
+      args:
+        - HTTP_PROXY
+        - HTTPS_PROXY
+        - NO_PROXY
+    ports:
+      - "3001:3001"
+
