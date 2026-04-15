@@ -81,12 +81,14 @@ Ensure `npm run build` has been run at least once before the first run.
 
 Call this tool to open or update the map view.
 
-| Argument | Type    | Description                                      |
-| -------- | ------- | ------------------------------------------------ |
-| `lon`    | number  | Longitude in decimal degrees (WGS84), −180…180   |
-| `lat`    | number  | Latitude in decimal degrees (WGS84), −90…90      |
-| `zoom`   | number? | Optional. Zoom level **0–19** (default **12**). 19 is the maximum for Plan IGN v2 (`PM_0_19`). |
-| `data_url` | string? | Optional. URL of a GeoJSON file to load on top of the Plan IGN base layer. |
+| Argument      | Type    | Description                                                                                    |
+| ------------- | ------- | ---------------------------------------------------------------------------------------------- |
+| `title`       | string? | Optional. View title (default: `"Carte IGN"`).                                                 |
+| `description` | string  | View description.                                                                              |
+| `lon`         | number  | Longitude in decimal degrees (WGS84), −180…180                                                 |
+| `lat`         | number  | Latitude in decimal degrees (WGS84), −90…90                                                    |
+| `zoom`        | number? | Optional. Zoom level **0–19** (default **12**). 19 is the maximum for Plan IGN v2 (`PM_0_19`). |
+| `data_url`    | string? | Optional. URL of a GeoJSON file to load on top of the Plan IGN base layer.                     |
 
 When `data_url` is provided, the app fetches the GeoJSON, displays it as a vector overlay, and automatically fits the map view to the data extent.
 
@@ -94,6 +96,8 @@ Example:
 
 ```json
 {
+  "title": "Carte IGN",
+  "description": "Buildings within 500m around Chamonix center",
   "lon": 6.869322,
   "lat": 45.923713,
   "zoom": 12,
@@ -115,4 +119,4 @@ The UI resource URI is `ui://mcp-carte-ign/mcp-app.html`.
 ## Resources
 
 - [MCP Apps overview](https://modelcontextprotocol.io/extensions/apps/overview)
-- [ignfab/demo-geocontext - ol-simple-map](https://github.com/ignfab/demo-geocontext/tree/main/front#principe) : the first attempt with more params
+- [ignfab/demo-geocontext - ol-simple-map](https://github.com/ignfab/demo-geocontext/tree/main/front#principe) : the first attempt with a web component
