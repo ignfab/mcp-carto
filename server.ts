@@ -31,6 +31,11 @@ const cspMeta = {
 const inputSchema = {
   title: z.string().optional().default("Carte IGN").describe("Titre de la vue (optionnel)"),
   description: z.string().describe("Description de la vue (optionnel)"),
+  background: z
+    .enum(["plan_ign_v2", "orthophotos"])
+    .optional()
+    .default("plan_ign_v2")
+    .describe("Fond de carte: plan IGN v2 (carte, plan) ou photographies aeriennes (photo, image, imagerie)"),
   lon: z
     .number()
     .min(-180)
@@ -98,9 +103,9 @@ export function createServer(): McpServer {
     server,
     "show_plan_ign_map",
     {
-      title: "Afficher la carte Plan IGN v2",
+      title: "Afficher la carte IGN",
       description: `Affiche une carte interactive OpenLayers avec 
-      la couche WMTS Plan IGN v2 (GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2, PM_0_19) de la Géoplateforme (data.geopf.fr), 
+      un fond de carte WMTS de la Géoplateforme (Plan IGN v2 ou photographies aeriennes), 
       centrée sur longitude, latitude et zoom, 
       et des données à partir d'une URL au format GeoJSON (optionnel).
       `,
@@ -108,15 +113,17 @@ export function createServer(): McpServer {
       outputSchema,
       _meta: { ui: { resourceUri } },
     },
-    async ({ lon, lat, zoom, data_url, title, description }): Promise<CallToolResult> => {
+    async ({ lon, lat, zoom, data_url, title, description, background }): Promise<CallToolResult> => {
       const zLevel = zoom ?? 12;
+      const bg = background ?? "plan_ign_v2";
       const dataText = data_url
         ? `, GeoJSON ${data_url}`
         : ", sans GeoJSON";
-      const text = `Plan IGN v2 : lon ${lon.toFixed(5)}, lat ${lat.toFixed(5)}, zoom ${zLevel}${dataText}`;
+      const bgText = bg === "orthophotos" ? "Orthophotos" : "Plan IGN v2";
+      const text = `${bgText} : lon ${lon.toFixed(5)}, lat ${lat.toFixed(5)}, zoom ${zLevel}${dataText}`;
       return {
         content: [{ type: "text", text }],
-        structuredContent: { lon, lat, zoom: zLevel, data_url, title, description },
+        structuredContent: { lon, lat, zoom: zLevel, data_url, title, description, background: bg },
         _meta: { viewUUID: randomUUID() },
       };
     },

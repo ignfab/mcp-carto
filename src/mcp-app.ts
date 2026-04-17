@@ -21,6 +21,7 @@ function parseViewArgs(
   lon: number;
   lat: number;
   zoom: number;
+  background: "plan_ign_v2" | "orthophotos";
   data_url?: string;
   title?: string;
   description?: string;
@@ -29,6 +30,7 @@ function parseViewArgs(
   const lon = args.lon;
   const lat = args.lat;
   const zoom = args.zoom;
+  const background = args.background;
   const dataUrl = args.data_url;
   const title = args.title;
   const description = args.description;
@@ -36,11 +38,13 @@ function parseViewArgs(
   const zRaw =
     typeof zoom === "number" && Number.isFinite(zoom) ? zoom : 12;
   const z = Math.min(19, Math.max(0, Math.round(zRaw)));
+  const bg = background === "orthophotos" ? "orthophotos" : "plan_ign_v2";
   const data_url = typeof dataUrl === "string" ? dataUrl : undefined;
   return {
     lon,
     lat,
     zoom: z,
+    background: bg,
     data_url,
     title: typeof title === "string" ? title : undefined,
     description: typeof description === "string" ? description : undefined,
@@ -53,6 +57,7 @@ function parseViewFromResult(
   lon: number;
   lat: number;
   zoom: number;
+  background: "plan_ign_v2" | "orthophotos";
   data_url?: string;
   title?: string;
   description?: string;
@@ -62,6 +67,7 @@ function parseViewFromResult(
         lon?: unknown;
         lat?: unknown;
         zoom?: unknown;
+        background?: unknown;
         data_url?: unknown;
         title?: unknown;
         description?: unknown;
@@ -91,7 +97,7 @@ function handleHostContextChanged(ctx: McpUiHostContext) {
   }
 }
 
-const app = new App({ name: "Carte Plan IGN v2", version: "1.0.0" });
+const app = new App({ name: "Carte IGN", version: "1.0.0" });
 
 app.onteardown = async () => {
   if (map && map.getTarget()) {
@@ -104,14 +110,14 @@ app.onteardown = async () => {
 app.ontoolinput = (params) => {
   const v = parseViewArgs(params.arguments);
   if (v) {
-    void applyView(v.lon, v.lat, v.zoom, v.data_url, v.title, v.description);
+    void applyView(v.lon, v.lat, v.zoom, v.background, v.data_url, v.title, v.description);
   }
 };
 
 app.ontoolresult = (result) => {
   const v = parseViewFromResult(result);
   if (v) {
-    void applyView(v.lon, v.lat, v.zoom, v.data_url, v.title, v.description);
+    void applyView(v.lon, v.lat, v.zoom, v.background, v.data_url, v.title, v.description);
   }
 };
 

@@ -24,10 +24,46 @@ import "ol/ol.css";
 import "ol-ext/dist/ol-ext.css";
 import "./map.css"
 
+type BackgroundMode = "plan_ign_v2" | "orthophotos";
 
 let map: Map | null = null;
 let dataLayer: VectorLayer<VectorSource> | null = null;
-const layer = new Geoportail({ layer: 'GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2' });
+const planIgnLayer = new Geoportail({ layer: "GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2" });
+planIgnLayer.set("title", "Plan IGN v2");
+planIgnLayer.set("baseLayer", true);
+planIgnLayer.setVisible(true);
+
+const orthophotoLayer = new Geoportail({ layer: "ORTHOIMAGERY.ORTHOPHOTOS" });
+orthophotoLayer.set("title", "Photographies aeriennes");
+orthophotoLayer.set("baseLayer", true);
+orthophotoLayer.setVisible(false);
+
+const dataColorizeFilter = new Colorize({ grayscale: 100 } as any) as any;
+
+function getActiveBackgroundLayer(background: BackgroundMode) {
+  return background === "orthophotos" ? orthophotoLayer : planIgnLayer;
+}
+
+function setBackground(background: BackgroundMode) {
+  planIgnLayer.setVisible(background === "plan_ign_v2");
+  orthophotoLayer.setVisible(background === "orthophotos");
+}
+
+function setDataVisualState(background: BackgroundMode, hasData: boolean, m: Map) {
+  (planIgnLayer as any).removeFilter?.(dataColorizeFilter);
+  // (orthophotoLayer as any).removeFilter?.(dataColorizeFilter);
+  if (hasData) {
+    // (orthophotoLayer as any).addFilter?.(dataColorizeFilter);
+    (planIgnLayer as any).addFilter?.(dataColorizeFilter);
+    m.getTargetElement().dataset.hasData = "true";
+    return;
+  }
+  delete m.getTargetElement().dataset.hasData;
+}
+
+function getBackgroundLabel(background: BackgroundMode): string {
+  return background === "orthophotos" ? "Photographies aériennes" : "Plan IGN v2";
+}
 
 /** Get the current map
  * If not created yet, create it with the base layer and controls
@@ -38,7 +74,7 @@ function getMap(): Map {
 
   map = new Map({
     target: "map",
-    layers: [ layer ],
+    layers: [planIgnLayer, orthophotoLayer],
     view: new View({
       center: fromLonLat([2.3522, 48.8566]),
       zoom: 12,
@@ -160,9 +196,6 @@ async function loadGeoJsonFromUrl(m: Map, dataUrl: string): Promise<boolean> {
     duration: 250,
   });
 
-  layer.addFilter(new Colorize({ grayscale: 100 } as any) as any);
-  m.getTargetElement().dataset.hasData = "true";
-
   return true;
 }
 
@@ -178,6 +211,7 @@ async function applyView(
   lon: number,
   lat: number,
   zoom: number,
+  background: BackgroundMode = "plan_ign_v2",
   data_url?: string,
   title?: string,
   description?: string,
@@ -187,15 +221,16 @@ async function applyView(
   const descriptionLabel = document.getElementById("description-label");
   const z = Math.min(19, Math.max(0, zoom));
   const m = getMap();
+  setBackground(background);
   m.getView().setCenter(fromLonLat([lon, lat]));
   m.getView().setZoom(z);
 
   if (titleLabel) {
-    titleLabel.textContent = title || "Carte Plan IGN v2";
+    titleLabel.textContent = title || `Carte ${getBackgroundLabel(background)}`;
   }
   if (descriptionLabel) {
     descriptionLabel.textContent =
-      description || "Affichage de la couche Plan IGN v2";
+      description || `Affichage du fond ${getBackgroundLabel(background)}`;
   }
 
   if (!data_url) {
@@ -207,6 +242,7 @@ async function applyView(
 
   try {
     const loaded = await loadGeoJsonFromUrl(m, data_url);
+    setDataVisualState(background, loaded, m);
     coordsLabel.textContent = loaded
       ? `lon ${lon.toFixed(5)} · lat ${lat.toFixed(5)} · GeoJSON charge et recadre`
       : `lon ${lon.toFixed(5)} · lat ${lat.toFixed(5)} · GeoJSON vide`;

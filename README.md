@@ -81,14 +81,15 @@ Ensure `npm run build` has been run at least once before the first run.
 
 Call this tool to open or update the map view.
 
-| Argument      | Type    | Description                                                                                    |
-| ------------- | ------- | ---------------------------------------------------------------------------------------------- |
-| `title`       | string? | Optional. View title (default: `"Carte IGN"`).                                                 |
-| `description` | string  | View description.                                                                              |
-| `lon`         | number  | Longitude in decimal degrees (WGS84), −180…180                                                 |
-| `lat`         | number  | Latitude in decimal degrees (WGS84), −90…90                                                    |
-| `zoom`        | number? | Optional. Zoom level **0–19** (default **12**). 19 is the maximum for Plan IGN v2 (`PM_0_19`). |
-| `data_url`    | string? | Optional. URL of a GeoJSON file to load on top of the Plan IGN base layer.                     |
+| Argument      | Type    | Description                                                                                             |
+| ------------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `title`       | string? | Optional. View title (default: `"Carte IGN"`).                                                          |
+| `description` | string  | View description.                                                                                       |
+| `background`  | string? | Optional. Base map background. One of: `"plan_ign_v2"` (default) or `"orthophotos"`.                  |
+| `lon`         | number  | Longitude in decimal degrees (WGS84), −180…180                                                          |
+| `lat`         | number  | Latitude in decimal degrees (WGS84), −90…90                                                             |
+| `zoom`        | number? | Optional. Zoom level **0–19** (default **12**). 19 is the maximum for Plan IGN v2 (`PM_0_19`).          |
+| `data_url`    | string? | Optional. URL of a GeoJSON file to load on top of the selected base layer.                              |
 
 When `data_url` is provided, the app fetches the GeoJSON, displays it as a vector overlay, and automatically fits the map view to the data extent.
 
@@ -98,6 +99,7 @@ Example:
 {
   "title": "Carte IGN",
   "description": "Buildings within 500m around Chamonix center",
+  "background": "orthophotos",
   "lon": 6.869322,
   "lat": 45.923713,
   "zoom": 12,
