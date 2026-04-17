@@ -6,10 +6,7 @@ import View from "ol/View.js";
 import VectorLayer from "ol/layer/Vector.js";
 import { fromLonLat } from "ol/proj.js";
 import VectorSource from "ol/source/Vector.js";
-import CircleStyle from "ol/style/Circle.js";
-import Fill from "ol/style/Fill.js";
-import Stroke from "ol/style/Stroke.js";
-import Style from "ol/style/Style.js";
+
 import Geoportail from "ol-ext/layer/Geoportail.js";
 import LayerSwitcher from "ol-ext/control/LayerSwitcher.js";
 import Colorize from "ol-ext/filter/CanvasFilter.js";
@@ -17,6 +14,8 @@ import Select from "ol/interaction/Select.js";
 import Popup from "ol-ext/overlay/PopupFeature.js";
 import Button from "ol-ext/control/Button.js";
 import { click } from "ol/events/condition.js";
+
+import getStyle from "./style.ts";
 
 import FileSaver from "file-saver";
 
@@ -28,28 +27,28 @@ type BackgroundMode = "plan_ign_v2" | "orthophotos";
 
 let map: Map | null = null;
 let dataLayer: VectorLayer<VectorSource> | null = null;
-const planIgnLayer = new Geoportail({ layer: "GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2" });
+const planIgnLayer = new Geoportail({ 
+  layer: "GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2",
+  baseLayer: true,
+  visible: true,
+});
 planIgnLayer.set("title", "Plan IGN v2");
-planIgnLayer.set("baseLayer", true);
-planIgnLayer.setVisible(true);
 
-const orthophotoLayer = new Geoportail({ layer: "ORTHOIMAGERY.ORTHOPHOTOS" });
+const orthophotoLayer = new Geoportail({ 
+  layer: "ORTHOIMAGERY.ORTHOPHOTOS",
+  baseLayer: true,
+  visible: false,
+});
 orthophotoLayer.set("title", "Photographies aeriennes");
-orthophotoLayer.set("baseLayer", true);
-orthophotoLayer.setVisible(false);
 
 const dataColorizeFilter = new Colorize({ grayscale: 100 } as any) as any;
-
-function getActiveBackgroundLayer(background: BackgroundMode) {
-  return background === "orthophotos" ? orthophotoLayer : planIgnLayer;
-}
 
 function setBackground(background: BackgroundMode) {
   planIgnLayer.setVisible(background === "plan_ign_v2");
   orthophotoLayer.setVisible(background === "orthophotos");
 }
 
-function setDataVisualState(background: BackgroundMode, hasData: boolean, m: Map) {
+function setDataVisualState(_background: BackgroundMode, hasData: boolean, m: Map) {
   (planIgnLayer as any).removeFilter?.(dataColorizeFilter);
   // (orthophotoLayer as any).removeFilter?.(dataColorizeFilter);
   if (hasData) {
@@ -102,27 +101,6 @@ function getMap(): Map {
     }
   });
   map.addControl(loaderBt);
-  /** /
-  switcher.on("drawlist", (e:any) => {
-    const layer = e.layer;
-    if (layer instanceof VectorLayer) {
-      const btn = document.createElement("button");
-      btn.textContent = "⬇️";
-      btn.addEventListener("click", () => {
-        const source = layer.getSource();
-        if (!source || !source.getFeatures) return;
-        const features = source.getFeatures();
-        if (features.length === 0) return;
-        const geoJson = new GeoJSON().writeFeatures(features, {
-          featureProjection: "EPSG:3857",
-        });
-        const blob = new Blob([geoJson], { type: "application/json" });
-        FileSaver.saveAs(blob, "data.geojson");
-      });
-      e.li.querySelector(".ol-layerswitcher-buttons")?.appendChild(btn);
-    }
-  });
-  /**/
   // Popup
   const select = new Select({ condition: click  });
   map.addInteraction(select);
@@ -145,15 +123,7 @@ function getLayer(m: Map): VectorLayer<VectorSource> {
   if (dataLayer) return dataLayer;
   dataLayer = new VectorLayer({
     source: new VectorSource(),
-    style: new Style({
-      fill: new Fill({ color: "rgba(230, 57, 70, 0.22)" }),
-      stroke: new Stroke({ color: "#e63946", width: 2 }),
-      image: new CircleStyle({
-        radius: 5,
-        fill: new Fill({ color: "#e63946" }),
-        stroke: new Stroke({ color: "#ffffff", width: 1.5 }),
-      }),
-    }),
+    style: getStyle,
   });
   dataLayer.set("title", "Données GeoJSON");
   m.addLayer(dataLayer);
