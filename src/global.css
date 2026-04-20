@@ -24,3 +24,10 @@ body {
   color: var(--color-text-primary);
   background: var(--color-background-primary);
 }
+
+p.debug {
+  color: #060;
+}
+p.debug:empty {
+  display: none;
+}

@@ -13,9 +13,11 @@ import Colorize from "ol-ext/filter/CanvasFilter.js";
 import Select from "ol/interaction/Select.js";
 import Popup from "ol-ext/overlay/PopupFeature.js";
 import Button from "ol-ext/control/Button.js";
+import Dialog from "ol-ext/control/Dialog.js";
 import { click } from "ol/events/condition.js";
 
 import getStyle from "./style.ts";
+import showDebug from "./debug.ts";
 
 import FileSaver from "file-saver";
 
@@ -33,6 +35,10 @@ const planIgnLayer = new Geoportail({
   visible: true,
 });
 planIgnLayer.set("title", "Plan IGN v2");
+
+const dialog = new Dialog({
+  closeBox: false,
+});
 
 const orthophotoLayer = new Geoportail({ 
   layer: "ORTHOIMAGERY.ORTHOPHOTOS",
@@ -81,6 +87,7 @@ function getMap(): Map {
       minZoom: 0,
     }),
   });
+  map.addControl(dialog);
   // Layerswitcher
   const switcher = new LayerSwitcher();
   map.addControl(switcher);
@@ -141,7 +148,26 @@ function clearDataLayer() {
  * @returns true if data loaded and displayed, false if no features or invalid extent
  */
 async function loadGeoJsonFromUrl(m: Map, dataUrl: string): Promise<boolean> {
-  const response = await fetch(dataUrl, { mode: "cors" });
+  const queryParams = new URLSearchParams(dataUrl.split('?')[1]);
+  const cqlFilter = queryParams.get('cql_filter');
+  let response: Response;
+  dialog.show("Chargement en cours");
+  if (cqlFilter) {
+    // Use POST request with cql_filter in body to avoid too-long GET URLs (issue #57)
+    queryParams.delete('cql_filter');
+    const baseUrl = dataUrl.split('?')[0] + '?' + queryParams.toString();
+    const body = 'cql_filter=' + encodeURIComponent(cqlFilter);
+    showDebug(`Chargement GeoJSON avec cql_filter (longueur ${cqlFilter.length})...`);
+    response = await fetch(baseUrl, {
+      mode: 'cors',
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body
+    });
+  } else {
+    response = await fetch(dataUrl, { mode: 'cors' });
+  }
+  dialog.close();
   if (!response.ok) {
     throw new Error(`Echec chargement GeoJSON (${response.status})`);
   }
