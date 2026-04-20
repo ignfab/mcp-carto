@@ -17,7 +17,7 @@ const featureStyle = new Style({
 /* Style depends on feature geometry and resolution 
   to return points for large polygons and actual geometry for small ones
 */
-function getStyle(feature: any, resolution: number): Style {
+function getStyle(feature: any, resolution: number, select=false): Style {
   const geomType = feature.getGeometry().getType();
   if (!/Point/.test(geomType)) {
     const extent = feature.getGeometry().getExtent();
@@ -30,6 +30,15 @@ function getStyle(feature: any, resolution: number): Style {
     }
   } else {
     featureStyle.setGeometry(feature.getGeometry());
+  }
+  if (select===true) {
+    featureStyle.setZIndex(1);
+    featureStyle.getImage()?.setScale(1.2);
+    featureStyle.getStroke()?.setWidth(4);
+  } else {
+    featureStyle.setZIndex(0);
+    featureStyle.getImage()?.setScale(1);
+    featureStyle.getStroke()?.setWidth(1.5);
   }
   return featureStyle;
 }

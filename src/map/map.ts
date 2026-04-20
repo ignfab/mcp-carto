@@ -108,8 +108,11 @@ function getMap(): Map {
     }
   });
   map.addControl(loaderBt);
-  // Popup
-  const select = new Select({ condition: click  });
+  // Popup for feature info
+  const select = new Select({ 
+    condition: click,
+    style: (feature, resolution) => getStyle(feature, resolution, true),
+  });
   map.addInteraction(select);
   map.addInteraction(select);
   const popup = new Popup({
@@ -157,7 +160,7 @@ async function loadGeoJsonFromUrl(m: Map, dataUrl: string): Promise<boolean> {
     queryParams.delete('cql_filter');
     const baseUrl = dataUrl.split('?')[0] + '?' + queryParams.toString();
     const body = 'cql_filter=' + encodeURIComponent(cqlFilter);
-    showDebug(`Chargement GeoJSON avec cql_filter (longueur ${cqlFilter.length})...`);
+    // showDebug(`Chargement GeoJSON avec cql_filter (longueur ${cqlFilter.length})...`);
     response = await fetch(baseUrl, {
       mode: 'cors',
       method: 'POST',
