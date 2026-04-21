@@ -151,10 +151,11 @@ function clearDataLayer() {
  * @returns true if data loaded and displayed, false if no features or invalid extent
  */
 async function loadGeoJsonFromUrl(m: Map, dataUrl: string): Promise<boolean> {
+  dataUrl = dataUrl.replace(/\bcql_filter=/gi, 'cql_filter=');
   const queryParams = new URLSearchParams(dataUrl.split('?')[1]);
   const cqlFilter = queryParams.get('cql_filter');
   let response: Response;
-  dialog.show("Chargement en cours");
+  dialog.show("Chargement en cours"); 
   if (cqlFilter) {
     // Use POST request with cql_filter in body to avoid too-long GET URLs (issue #57)
     queryParams.delete('cql_filter');
@@ -172,6 +173,7 @@ async function loadGeoJsonFromUrl(m: Map, dataUrl: string): Promise<boolean> {
   }
   dialog.close();
   if (!response.ok) {
+    showDebug(`Echec chargement GeoJSON (${response.status})`);
     throw new Error(`Echec chargement GeoJSON (${response.status})`);
   }
 
