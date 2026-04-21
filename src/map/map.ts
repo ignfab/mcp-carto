@@ -8,12 +8,13 @@ import { fromLonLat } from "ol/proj.js";
 import VectorSource from "ol/source/Vector.js";
 
 import Geoportail from "ol-ext/layer/Geoportail.js";
-import LayerSwitcher from "ol-ext/control/LayerSwitcher.js";
+import LayerSwitcher from "ol-ext/control/LayerShop.js";
+import InputSlider from "ol-ext/util/input/Slider.js";
 import Colorize from "ol-ext/filter/CanvasFilter.js";
 import Select from "ol/interaction/Select.js";
 import Popup from "ol-ext/overlay/PopupFeature.js";
-import Button from "ol-ext/control/Button.js";
 import Dialog from "ol-ext/control/Dialog.js";
+import Hover from "ol-ext/interaction/Hover.js";
 import { click } from "ol/events/condition.js";
 import getStyle from "./style.ts";
 import showDebug from "./debug.ts";
@@ -86,32 +87,58 @@ function getMap(): Map {
     }),
   });
   map.addControl(dialog);
+  // Hover interaction to show pointer cursor on hover and potential for future hover info
+  const hover = new Hover({ 
+    cursor: 'pointer'
+  });
+  map.addInteraction(hover);
   // Layerswitcher
-  const switcher = new LayerSwitcher();
-  map.addControl(switcher);
-  // Download button for vector layers
-  const loaderBt = new Button({
-    className: "ol-download",
-    title: "Télécharger les données affichées",
-    handleClick: () => {
-      const layers = Object.values(dataLayers);
-      if (layers.length === 0) return;
-      const features: any[] = [];
-      layers.forEach(layer => {
-        const layerFeatures = layer.getSource()?.getFeatures();
-        if (layerFeatures) {
-          features.push(...layerFeatures);
-        }
-      });
-      if (features.length === 0) return;
-      const geoJson = new GeoJSON().writeFeatures(features, {
-        featureProjection: "EPSG:3857",
-      });
-      const blob = new Blob([geoJson], { type: "application/json" });
-      FileSaver.saveAs(blob, "data.geojson");
+  const switcher = new LayerSwitcher({
+    minibar: true,
+    counter: true,
+    selection: false,
+  });
+  // Opacity slider
+  const opacity = new InputSlider({
+    className: 'opacity',
+    align: 'right',
+    type: 'number',
+    min: 0,
+    max: 100,
+    parent: switcher.getBarElement()
+  });
+  opacity.getInputElement().setAttribute('aria-label', 'Opacité de la couche');
+  opacity.getInputElement().setAttribute('title', 'Opacité de la couche');
+  opacity.on('change:value', function(e: any) {
+    switcher.getSelection().setOpacity(e.value/100);
+  })
+  switcher.on(['layer:opacity', 'select'], function(e: any) {
+    if (e.layer === switcher.getSelection()) {
+      opacity.setValue(Math.round(e.layer.getOpacity()*100));
     }
   });
-  map.addControl(loaderBt);
+  map.addControl(switcher);
+  // Download button for vector layers
+  switcher.on("drawlist", (e:any) => {
+    const layer = e.layer;
+    if (layer instanceof VectorLayer) {
+      const btn = document.createElement("button");
+      btn.textContent = "⬇️";
+      btn.title = "Télécharger les données";
+      btn.addEventListener("click", () => {
+        const source = layer.getSource();
+        if (!source || !source.getFeatures) return;
+        const features = source.getFeatures();
+        if (features.length === 0) return;
+        const geoJson = new GeoJSON().writeFeatures(features, {
+          featureProjection: "EPSG:3857",
+        });
+        const blob = new Blob([geoJson], { type: "application/json" });
+        FileSaver.saveAs(blob, (layer.get('title') || 'data') + ".geojson");
+      });
+      e.li.querySelector(".ol-layerswitcher-buttons")?.appendChild(btn);
+    }
+  });
   // Popup for feature info
   const select = new Select({ 
     condition: click,

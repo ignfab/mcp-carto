@@ -32,3 +32,18 @@
 	top: 50%;
 	transform: translate(-50%,-50%);
 }
+
+/* Layershop */
+.ol-layerswitcher .ol-title-bar,
+.ol-layerswitcher .ol-bottom-bar {
+  display: none!important;
+}
+.ol-layerswitcher .layerswitcher-opacity {
+  display: none;
+}
+.ol-layer-shop .ol-bar input[type="number"] {
+  width: 4em;
+  height: 1.2em;
+  line-height: 1.2em;
+  font-size: 1em;
+}
