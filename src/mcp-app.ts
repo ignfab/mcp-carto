@@ -22,7 +22,7 @@ function parseViewArgs(
   lat: number;
   zoom: number;
   background: "plan_ign_v2" | "orthophotos";
-  data_url?: string;
+  layers?: Array<{ title: string; data_url: string }>;
   title?: string;
   description?: string;
 } | null {
@@ -31,7 +31,7 @@ function parseViewArgs(
   const lat = args.lat;
   const zoom = args.zoom;
   const background = args.background;
-  const dataUrl = args.data_url;
+  const layers = args.layers;
   const title = args.title;
   const description = args.description;
   if (typeof lon !== "number" || typeof lat !== "number") return null;
@@ -39,13 +39,21 @@ function parseViewArgs(
     typeof zoom === "number" && Number.isFinite(zoom) ? zoom : 12;
   const z = Math.min(19, Math.max(0, Math.round(zRaw)));
   const bg = background === "orthophotos" ? "orthophotos" : "plan_ign_v2";
-  const data_url = typeof dataUrl === "string" ? dataUrl : undefined;
+  const parsedLayers = Array.isArray(layers)
+    ? layers.filter(
+        (layer): layer is { title: string; data_url: string } =>
+          typeof layer === "object" &&
+          layer !== null &&
+          typeof (layer as any).title === "string" &&
+          typeof (layer as any).data_url === "string",
+      )
+    : undefined;
   return {
     lon,
     lat,
     zoom: z,
     background: bg,
-    data_url,
+    layers: parsedLayers,
     title: typeof title === "string" ? title : undefined,
     description: typeof description === "string" ? description : undefined,
   };
@@ -58,7 +66,7 @@ function parseViewFromResult(
   lat: number;
   zoom: number;
   background: "plan_ign_v2" | "orthophotos";
-  data_url?: string;
+  layers?: Array<{ title: string; data_url: string }>;
   title?: string;
   description?: string;
 } | null {
@@ -68,7 +76,7 @@ function parseViewFromResult(
         lat?: unknown;
         zoom?: unknown;
         background?: unknown;
-        data_url?: unknown;
+        layers?: unknown;
         title?: unknown;
         description?: unknown;
       }
@@ -110,14 +118,14 @@ app.onteardown = async () => {
 app.ontoolinput = (params) => {
   const v = parseViewArgs(params.arguments);
   if (v) {
-    void applyView(v.lon, v.lat, v.zoom, v.background, v.data_url, v.title, v.description);
+    void applyView(v.lon, v.lat, v.zoom, v.background, v.layers, v.title, v.description);
   }
 };
 
 app.ontoolresult = (result) => {
   const v = parseViewFromResult(result);
   if (v) {
-    void applyView(v.lon, v.lat, v.zoom, v.background, v.data_url, v.title, v.description);
+    void applyView(v.lon, v.lat, v.zoom, v.background, v.layers, v.title, v.description);
   }
 };
 

@@ -55,20 +55,18 @@ const inputSchema = {
     .describe(
       "Niveau de zoom (0 = monde, 19 = max pour Plan IGN v2 / PM_0_19)",
     ),
-  data_url: z
-    .string()
-    .url()
+  layers: z
+    .array(
+      z.object({
+        title: z.string().describe("Titre de la couche"),
+        data_url: z.string().url().describe("URL d'un GeoJSON (astuce : utiliser gpf_get_features de geocontext avec result_type=url)"),
+      }),
+    )
     .optional()
-    .describe("URL d'un GeoJSON a charger sur la carte (astuce : utiliser gpf_get_features de geocontext avec result_type=url"),
+    .describe("Liste des couches GeoJSON à charger sur la carte"),
 };
 
 const outputSchema = inputSchema;
-// const outputSchema = z.object({
-//   lon: z.number(),
-//   lat: z.number(),
-//   zoom: z.number(),
-//   data_url: z.string().optional(),
-// });
 
 export function createServer(): McpServer {
   const server = new McpServer({
@@ -113,17 +111,17 @@ export function createServer(): McpServer {
       outputSchema,
       _meta: { ui: { resourceUri } },
     },
-    async ({ lon, lat, zoom, data_url, title, description, background }): Promise<CallToolResult> => {
+    async ({ lon, lat, zoom, layers, title, description, background }): Promise<CallToolResult> => {
       const zLevel = zoom ?? 12;
       const bg = background ?? "plan_ign_v2";
-      const dataText = data_url
-        ? `, GeoJSON ${data_url}`
-        : ", sans GeoJSON";
+      const layersText = layers && layers.length > 0
+        ? `, ${layers.length} couche(s) (${layers.map(l => l.title).join(", ")})`
+        : ", sans couche";
       const bgText = bg === "orthophotos" ? "Orthophotos" : "Plan IGN v2";
-      const text = `${bgText} : lon ${lon.toFixed(5)}, lat ${lat.toFixed(5)}, zoom ${zLevel}${dataText}`;
+      const text = `${bgText} : lon ${lon.toFixed(5)}, lat ${lat.toFixed(5)}, zoom ${zLevel}${layersText}`;
       return {
         content: [{ type: "text", text }],
-        structuredContent: { lon, lat, zoom: zLevel, data_url, title, description, background: bg },
+        structuredContent: { lon, lat, zoom: zLevel, layers, title, description, background: bg },
         _meta: { viewUUID: randomUUID() },
       };
     },

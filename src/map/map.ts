@@ -29,6 +29,7 @@ type BackgroundMode = "plan_ign_v2" | "orthophotos";
 
 let map: Map | null = null;
 let dataLayer: VectorLayer<VectorSource> | null = null;
+const dataLayers: Record<string, VectorLayer<VectorSource>> = {};
 const planIgnLayer = new Geoportail({ 
   layer: "GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2",
   baseLayer: true,
@@ -96,9 +97,15 @@ function getMap(): Map {
     className: "ol-download",
     title: "Télécharger les données affichées",
     handleClick: () => {
-      const source = getLayer(map as Map).getSource();
-      if (!source || !source.getFeatures) return;
-      const features = source.getFeatures();
+      const layers = Object.values(dataLayers);
+      if (layers.length === 0) return;
+      const features: any[] = [];
+      layers.forEach(layer => {
+        const layerFeatures = layer.getSource()?.getFeatures();
+        if (layerFeatures) {
+          features.push(...layerFeatures);
+        }
+      });
       if (features.length === 0) return;
       const geoJson = new GeoJSON().writeFeatures(features, {
         featureProjection: "EPSG:3857",
@@ -124,33 +131,47 @@ function getMap(): Map {
   return map;
 }
 
-/** Get the layer
+/** Get or create a layer by title
  * If not created yet, create it and add to the map
  * @param m OpenLayers Map instance
+ * @param layerTitle Title of the layer
  * @return the VectorLayer for displaying GeoJSON data
  */
-function getLayer(m: Map): VectorLayer<VectorSource> {
-  if (dataLayer) return dataLayer;
-  dataLayer = new VectorLayer({
+function getLayerByTitle(m: Map, layerTitle: string): VectorLayer<VectorSource> {
+  const existing = dataLayers[layerTitle];
+  if (existing) return existing;
+
+  const newLayer = new VectorLayer({
     source: new VectorSource(),
     style: getStyle,
   });
-  dataLayer.set("title", "Données GeoJSON");
-  m.addLayer(dataLayer);
-  return dataLayer;
+  newLayer.set("title", layerTitle);
+  dataLayers[layerTitle] = newLayer;
+  m.addLayer(newLayer);
+  return newLayer;
 }
 
-/** Clear the data layer */
-function clearDataLayer() {
-  dataLayer?.getSource()?.clear(true);
+/** Clear all data layers */
+function clearAllDataLayers() {
+  const m = getMap();
+  Object.entries(dataLayers).forEach(([, layer]) => {
+    if (layer) {
+      layer.getSource()?.clear(true);
+      m.removeLayer(layer);
+    }
+  });
+  Object.keys(dataLayers).forEach((key) => {
+    delete dataLayers[key];
+  });
 }
 
 /** Load GeoJSON from URL and display on the map, then fit view to data extent
  * @param m OpenLayers Map instance
  * @param dataUrl URL to the GeoJSON file
+ * @param targetLayer optional target VectorLayer to load data into
  * @returns true if data loaded and displayed, false if no features or invalid extent
  */
-async function loadGeoJsonFromUrl(m: Map, dataUrl: string): Promise<boolean> {
+async function loadGeoJsonFromUrl(m: Map, dataUrl: string, targetLayer?: VectorLayer<VectorSource>): Promise<boolean> {
   dataUrl = dataUrl.replace(/\bcql_filter=/gi, 'cql_filter=');
   const queryParams = new URLSearchParams(dataUrl.split('?')[1]);
   const cqlFilter = queryParams.get('cql_filter');
@@ -178,7 +199,8 @@ async function loadGeoJsonFromUrl(m: Map, dataUrl: string): Promise<boolean> {
   }
 
   const geoJson = await response.json();
-  const source = getLayer(m).getSource();
+  const layer = targetLayer || getLayerByTitle(m, "Données GeoJSON");
+  const source = layer.getSource();
   if (!source) return false;
 
   source.clear(true);
@@ -204,7 +226,8 @@ async function loadGeoJsonFromUrl(m: Map, dataUrl: string): Promise<boolean> {
  * @param lon longitude
  * @param lat latitude
  * @param zoom zoom level 
- * @param data_url optional url to a GeoJSON file to load and display on the map
+ * @param background background map type
+ * @param layers optional array of layers with title and data_url to load and display on the map
  * @param title optional title to display in the header
  * @param description optional description to display below the header
  */
@@ -213,7 +236,7 @@ async function applyView(
   lat: number,
   zoom: number,
   background: BackgroundMode = "plan_ign_v2",
-  data_url?: string,
+  layers?: Array<{ title: string; data_url: string }>,
   title?: string,
   description?: string,
 ) {
@@ -234,22 +257,30 @@ async function applyView(
       description || `Affichage du fond ${getBackgroundLabel(background)}`;
   }
 
-  if (!data_url) {
-    clearDataLayer();
+  if (!layers || layers.length === 0) {
+    clearAllDataLayers();
     coordsLabel.textContent = `lon ${lon.toFixed(5)} · lat ${lat.toFixed(5)} · zoom ${z}`;
     m.updateSize();
     return;
   }
 
   try {
-    const loaded = await loadGeoJsonFromUrl(m, data_url);
-    setDataVisualState(background, loaded, m);
-    coordsLabel.textContent = loaded
-      ? `lon ${lon.toFixed(5)} · lat ${lat.toFixed(5)} · GeoJSON charge et recadre`
-      : `lon ${lon.toFixed(5)} · lat ${lat.toFixed(5)} · GeoJSON vide`;
+    let hasData = false;
+    clearAllDataLayers();
+
+    for (const layer of layers) {
+      const targetLayer = getLayerByTitle(m, layer.title);
+      const loaded = await loadGeoJsonFromUrl(m, layer.data_url, targetLayer);
+      hasData = hasData || loaded;
+    }
+
+    setDataVisualState(background, hasData, m);
+    coordsLabel.textContent = hasData
+      ? `lon ${lon.toFixed(5)} · lat ${lat.toFixed(5)} · ${layers.length} couche(s) chargée(s)`
+      : `lon ${lon.toFixed(5)} · lat ${lat.toFixed(5)} · couche(s) vide(s)`;
   } catch (error) {
     console.error("Erreur chargement GeoJSON", error);
-    clearDataLayer();
+    clearAllDataLayers();
     coordsLabel.textContent = `lon ${lon.toFixed(5)} · lat ${lat.toFixed(5)} · zoom ${z} · echec GeoJSON`;
   }
 
