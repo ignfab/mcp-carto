@@ -15,11 +15,11 @@ import Popup from "ol-ext/overlay/PopupFeature.js";
 import Button from "ol-ext/control/Button.js";
 import Dialog from "ol-ext/control/Dialog.js";
 import { click } from "ol/events/condition.js";
-
 import getStyle from "./style.ts";
 import showDebug from "./debug.ts";
-
 import FileSaver from "file-saver";
+
+import type { Feature } from "ol";
 
 import "ol/ol.css";
 import "ol-ext/dist/ol-ext.css";
@@ -135,9 +135,10 @@ function getMap(): Map {
  * If not created yet, create it and add to the map
  * @param m OpenLayers Map instance
  * @param layerTitle Title of the layer
+ * @param color Color to use for the layer (default: red)
  * @return the VectorLayer for displaying GeoJSON data
  */
-function getLayerByTitle(m: Map, layerTitle: string): VectorLayer<VectorSource> {
+function getLayerByTitle(m: Map, layerTitle: string, color: string = "#f00"): VectorLayer<VectorSource> {
   const existing = dataLayers[layerTitle];
   if (existing) return existing;
 
@@ -145,7 +146,11 @@ function getLayerByTitle(m: Map, layerTitle: string): VectorLayer<VectorSource> 
     source: new VectorSource(),
     style: getStyle,
   });
+  newLayer.getSource()?.on("addfeature", (e:any) => {
+    e.feature._layer = newLayer;
+  });
   newLayer.set("title", layerTitle);
+  newLayer.set("color", color);
   dataLayers[layerTitle] = newLayer;
   m.addLayer(newLayer);
   return newLayer;
@@ -227,7 +232,7 @@ async function loadGeoJsonFromUrl(m: Map, dataUrl: string, targetLayer?: VectorL
  * @param lat latitude
  * @param zoom zoom level 
  * @param background background map type
- * @param layers optional array of layers with title and data_url to load and display on the map
+ * @param layers optional array of layers with title, color and data_url to load and display on the map
  * @param title optional title to display in the header
  * @param description optional description to display below the header
  */
@@ -236,7 +241,7 @@ async function applyView(
   lat: number,
   zoom: number,
   background: BackgroundMode = "plan_ign_v2",
-  layers?: Array<{ title: string; data_url: string }>,
+  layers?: Array<{ title: string; color: string, data_url: string }>,
   title?: string,
   description?: string,
 ) {
@@ -269,7 +274,7 @@ async function applyView(
     clearAllDataLayers();
 
     for (const layer of layers) {
-      const targetLayer = getLayerByTitle(m, layer.title);
+      const targetLayer = getLayerByTitle(m, layer.title, layer.color);
       const loaded = await loadGeoJsonFromUrl(m, layer.data_url, targetLayer);
       hasData = hasData || loaded;
     }

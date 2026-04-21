@@ -22,7 +22,7 @@ function parseViewArgs(
   lat: number;
   zoom: number;
   background: "plan_ign_v2" | "orthophotos";
-  layers?: Array<{ title: string; data_url: string }>;
+  layers?: Array<{ title: string; color: string, data_url: string }>;
   title?: string;
   description?: string;
 } | null {
@@ -41,7 +41,7 @@ function parseViewArgs(
   const bg = background === "orthophotos" ? "orthophotos" : "plan_ign_v2";
   const parsedLayers = Array.isArray(layers)
     ? layers.filter(
-        (layer): layer is { title: string; data_url: string } =>
+        (layer): layer is { title: string; color: string, data_url: string } =>
           typeof layer === "object" &&
           layer !== null &&
           typeof (layer as any).title === "string" &&
@@ -66,7 +66,7 @@ function parseViewFromResult(
   lat: number;
   zoom: number;
   background: "plan_ign_v2" | "orthophotos";
-  layers?: Array<{ title: string; data_url: string }>;
+  layers?: Array<{ title: string; color: string, data_url: string }>;
   title?: string;
   description?: string;
 } | null {

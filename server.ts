@@ -59,6 +59,7 @@ const inputSchema = {
     .array(
       z.object({
         title: z.string().describe("Titre de la couche"),
+        color: z.string().describe("Couleur d'affichage en fonction du type d'entités affiché (au format CSS, ex: 'red' ou '#ff0000')"),
         data_url: z.string().url().describe("URL d'un GeoJSON (astuce : utiliser gpf_get_features de geocontext avec result_type=url)"),
       }),
     )
