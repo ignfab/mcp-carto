@@ -90,14 +90,14 @@ function getMap(): Map {
   // Hover interaction to show pointer cursor on hover and potential for future hover info
   const hover = new Hover({ 
     cursor: 'pointer'
-  });
+  } as any);
   map.addInteraction(hover);
   // Layerswitcher
   const switcher = new LayerSwitcher({
     minibar: true,
     counter: true,
     selection: false,
-  });
+  } as any);
   // Opacity slider
   const opacity = new InputSlider({
     className: 'opacity',
@@ -112,7 +112,7 @@ function getMap(): Map {
   opacity.on('change:value', function(e: any) {
     switcher.getSelection().setOpacity(e.value/100);
   })
-  switcher.on(['layer:opacity', 'select'], function(e: any) {
+  switcher.on(['layer:opacity', 'select'] as any, function(e: any) {
     if (e.layer === switcher.getSelection()) {
       opacity.setValue(Math.round(e.layer.getOpacity()*100));
     }
