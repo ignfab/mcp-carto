@@ -19,8 +19,6 @@ import getStyle from "./style.ts";
 import showDebug from "./debug.ts";
 import FileSaver from "file-saver";
 
-import type { Feature } from "ol";
-
 import "ol/ol.css";
 import "ol-ext/dist/ol-ext.css";
 import "./map.css"
@@ -28,7 +26,6 @@ import "./map.css"
 type BackgroundMode = "plan_ign_v2" | "orthophotos";
 
 let map: Map | null = null;
-let dataLayer: VectorLayer<VectorSource> | null = null;
 const dataLayers: Record<string, VectorLayer<VectorSource>> = {};
 const planIgnLayer = new Geoportail({ 
   layer: "GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2",
