@@ -15,8 +15,10 @@ import Select from "ol/interaction/Select.js";
 import Popup from "ol-ext/overlay/PopupFeature.js";
 import Dialog from "ol-ext/control/Dialog.js";
 import Hover from "ol-ext/interaction/Hover.js";
+import LegendCtrl from "ol-ext/control/Legend.js";
+import Legend from "ol-ext/legend/Legend.js";
 import { click } from "ol/events/condition.js";
-import getStyle from "./style.ts";
+import getStyle, { getFeatureStyle } from "./style.ts";
 import showDebug from "./debug.ts";
 import FileSaver from "file-saver";
 
@@ -26,6 +28,27 @@ import "./map.css"
 
 type BackgroundMode = "plan_ign_v2" | "orthophotos";
 
+import Text from "ol/style/Text.js";
+import Fill from "ol/style/Fill.js";
+
+// The legend
+const legend = new Legend({
+  title: "Légende",
+  margin: 3,
+  size: [18, 15],
+  textStyle: new Text({
+    font: '12px sans-serif',
+    fill: new Fill({
+      color: '#333'
+    }),
+    backgroundFill: new Fill({
+      color: 'rgba(255,255,255,.8)'
+    })
+  })
+});
+let legendItem = {} as Record<string, boolean>;
+
+// The map
 let map: Map | null = null;
 const dataLayers: Record<string, VectorLayer<VectorSource>> = {};
 const planIgnLayer = new Geoportail({ 
@@ -139,6 +162,14 @@ function getMap(): Map {
       e.li.querySelector(".ol-layerswitcher-buttons")?.appendChild(btn);
     }
   });
+  // Legend control
+  const legendCtrl = new LegendCtrl({
+    title: "Légende",
+    legend: legend,
+    collapsible: true,
+    collapsed: true,
+  })
+  map.addControl(legendCtrl);
   // Popup for feature info
   const select = new Select({ 
     condition: click,
@@ -166,8 +197,9 @@ function getLayerByTitle(m: Map, layerTitle: string, color: string = "#f00"): Ve
   const existing = dataLayers[layerTitle];
   if (existing) return existing;
 
+  const source = new VectorSource();
   const newLayer = new VectorLayer({
-    source: new VectorSource(),
+    source: source,
     style: getStyle,
   });
   newLayer.getSource()?.on("addfeature", (e:any) => {
@@ -177,6 +209,16 @@ function getLayerByTitle(m: Map, layerTitle: string, color: string = "#f00"): Ve
   newLayer.set("color", color);
   dataLayers[layerTitle] = newLayer;
   m.addLayer(newLayer);
+  // Add Style to legend 
+  if (!legendItem[layerTitle]) {
+    legendItem[layerTitle] = true;
+    const style = getFeatureStyle(color).clone();
+    legend.addItem({ 
+      title: layerTitle, 
+      typeGeom: 'Polygon',
+      style: style,
+    });
+  }
   return newLayer;
 }
 

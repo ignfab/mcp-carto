@@ -10,7 +10,8 @@ const colorCache: Record<string, Style> = {};
 /* Style for features, 
   with caching based on color to optimize performance 
 */
-function getFeatureStyle(color: Array<number>): Style {
+function getFeatureStyle(color: string|Array<number>): Style {
+  color = asArray(color);
   const colorKey = color.join(",");
   let style = colorCache[colorKey];
   if (!style) {
@@ -40,7 +41,7 @@ function getStyle(feature: any, resolution: number, select=false): Style {
   if (!/Point/.test(geomType)) {
     const extent = feature.getGeometry().getExtent();
     const size = Math.max(extent[2] - extent[0], extent[3] - extent[1]);
-    if (size/resolution < 5) {
+    if (resolution && size/resolution < 5) {
       const center = [(extent[0] + extent[2]) / 2, (extent[1] + extent[3]) / 2];
       style.setGeometry(new Point(center));
     } else {
@@ -62,4 +63,5 @@ function getStyle(feature: any, resolution: number, select=false): Style {
   return style;
 }
 
+export { getFeatureStyle };
 export default getStyle;
