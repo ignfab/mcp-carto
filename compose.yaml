@@ -7,6 +7,9 @@ services:
         - HTTP_PROXY
         - HTTPS_PROXY
         - NO_PROXY
+    read_only: true
     ports:
       - "3001:3001"
+    restart: unless-stopped
+
 
