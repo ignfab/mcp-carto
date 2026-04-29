@@ -9,7 +9,10 @@ import { createServer } from "./server.js";
 export async function startStreamableHTTPServer(
   factory: () => McpServer,
 ): Promise<void> {
-  const port = parseInt(process.env.PORT ?? "3001", 10);
+  // HTTP_PORT sets the TCP port exposed by the Streamable HTTP transport.
+  const port = parseInt(process.env.HTTP_PORT ?? "3001", 10);
+  // HTTP_MCP_ENDPOINT sets the MCP route path served by the Streamable HTTP transport.
+  const endpoint = process.env.HTTP_MCP_ENDPOINT ?? "/mcp";
 
   const app = createMcpExpressApp({ host: "0.0.0.0" });
   app.use(cors());
@@ -18,7 +21,7 @@ export async function startStreamableHTTPServer(
     res.status(200).json({ status: "ok" });
   });
 
-  app.all("/mcp", async (req: Request, res: Response) => {
+  app.all(endpoint, async (req: Request, res: Response) => {
     const server = factory();
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
@@ -45,7 +48,7 @@ export async function startStreamableHTTPServer(
   });
 
   const httpServer = app.listen(port, () => {
-    console.log(`MCP server listening on http://localhost:${port}/mcp`);
+    console.log(`MCP server listening on http://localhost:${port}${endpoint}`);
   });
 
   const shutdown = () => {

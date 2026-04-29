@@ -29,9 +29,8 @@ The build compiles the server and bundles `mcp-app.html` (OpenLayers + Plan IGN 
 npm run serve
 ```
 
-Default URL: `http://localhost:3001/mcp`. Override the port with the `PORT` environment variable.
+Default URL: `http://localhost:3001/mcp` (see [Parameters](#parameters) for customization)
 
-Use this only if your client is configured to connect to an HTTP MCP endpoint.
 
 **Exemple with Claude Desktop** :
 
@@ -81,15 +80,15 @@ Ensure `npm run build` has been run at least once before the first run.
 
 Call this tool to open or update the map view.
 
-| Argument      | Type    | Description                                                                                             |
-| ------------- | ------- | ------------------------------------------------------------------------------------------------------- |
-| `title`       | string? | Optional. View title (default: `"Carte IGN"`).                                                          |
-| `description` | string  | View description.                                                                                       |
-| `background`  | string? | Optional. Base map background. One of: `"plan_ign_v2"` (default) or `"orthophotos"`.                  |
-| `lon`         | number  | Longitude in decimal degrees (WGS84), −180…180                                                          |
-| `lat`         | number  | Latitude in decimal degrees (WGS84), −90…90                                                             |
-| `zoom`        | number? | Optional. Zoom level **0–19** (default **12**). 19 is the maximum for Plan IGN v2 (`PM_0_19`).          |
-| `layers`    | Object? | Optional. A list of GeoJSON layers to load on top of the selected base layer (with title, color and data_url).                              |
+| Argument      | Type    | Description                                                                                                    |
+| ------------- | ------- | -------------------------------------------------------------------------------------------------------------- |
+| `title`       | string? | Optional. View title (default: `"Carte IGN"`).                                                                 |
+| `description` | string  | View description.                                                                                              |
+| `background`  | string? | Optional. Base map background. One of: `"plan_ign_v2"` (default) or `"orthophotos"`.                           |
+| `lon`         | number  | Longitude in decimal degrees (WGS84), −180…180                                                                 |
+| `lat`         | number  | Latitude in decimal degrees (WGS84), −90…90                                                                    |
+| `zoom`        | number? | Optional. Zoom level **0–19** (default **12**). 19 is the maximum for Plan IGN v2 (`PM_0_19`).                 |
+| `layers`      | Object? | Optional. A list of GeoJSON layers to load on top of the selected base layer (with title, color and data_url). |
 
 When `layers` is provided, the app fetches the GeoJSON, displays them as a vector overlays, and automatically fits the map view to the data extent.
 
@@ -117,6 +116,17 @@ The UI resource URI is `ui://mcp-carte-ign/mcp-app.html`.
 
 - **`npm run dev`** — watch-rebuild the UI and run the HTTP server with reload.
 - **`npm run watch:ui`** — rebuild the bundled HTML on file changes only.
+
+## Parameters
+
+For advanced configuration.
+
+| Name                | Description                                                                             | Default |
+| ------------------- | --------------------------------------------------------------------------------------- | ------- |
+| `HTTP_PORT`         | TCP port used by the Streamable HTTP transport when running `npm run serve`.            | `3001`  |
+| `HTTP_MCP_ENDPOINT` | HTTP route path used by the Streamable HTTP transport. The value should start with `/`. | `/mcp`  |
+
+
 
 ## License
 
