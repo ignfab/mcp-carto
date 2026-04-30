@@ -1,6 +1,6 @@
 {
   "name": "mcp-carte-ign",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "type": "module",
   "private": true,
   "description": "MCP App : carte OpenLayers avec fond Plan IGN v2 (WMTS Géoplateforme)",
