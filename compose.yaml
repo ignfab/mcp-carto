@@ -1,5 +1,6 @@
 services:
   mcp:
+    image: mcp-carte-ign:main
     container_name: mcp-carte-ign
     build:
       context: .
