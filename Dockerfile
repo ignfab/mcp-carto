@@ -11,7 +11,7 @@ FROM node:24-alpine AS production
 WORKDIR /app
 COPY package*.json ./
 COPY --from=builder /app/dist ./dist
-RUN npm install --only=production
+RUN npm install --omit=dev
 
 EXPOSE 3001
 USER node
