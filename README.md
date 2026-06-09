@@ -1,4 +1,4 @@
-# mcp-carte-ign
+# mcp-carto
 
 > **WARNING** : The whole code for this PoC is AI generated with Cursor and **not reviewed**.
 
@@ -37,7 +37,7 @@ Default URL: `http://localhost:3001/mcp` (see [Parameters](#parameters) for cust
 ```json
 {
   "mcpServers": {
-    "carte-ign": {
+    "carto": {
       "command": "npx",
       "args": [
         "mcp-remote",
@@ -63,10 +63,10 @@ Point your MCP configuration at this command so the host spawns the process and 
 ```json
 {
   "mcpServers": {
-    "carte-ign": {
+    "carto": {
       "command": "npm",
       "args": ["run", "serve:stdio"],
-      "cwd": "/path/to/mcp-carte-ign"
+      "cwd": "/path/to/mcp-carto"
     }
   }
 }
@@ -110,7 +110,7 @@ Example:
 }
 ```
 
-The UI resource URI is `ui://mcp-carte-ign/mcp-app.html`.
+The UI resource URI is `ui://mcp-carto/mcp-app.html`.
 
 ## Development
 
