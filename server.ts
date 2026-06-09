@@ -17,7 +17,7 @@ const DIST_DIR = import.meta.filename.endsWith(".ts")
   ? path.join(import.meta.dirname, "dist")
   : import.meta.dirname;
 
-const resourceUri = "ui://mcp-carte-ign/mcp-app.html";
+const resourceUri = "ui://mcp-carto/mcp-app.html";
 
 const cspMeta = {
   ui: {
@@ -71,7 +71,7 @@ const outputSchema = inputSchema;
 
 export function createServer(): McpServer {
   const server = new McpServer({
-    name: "mcp-carte-ign",
+    name: "mcp-cart",
     version: "1.0.0",
   });
 
