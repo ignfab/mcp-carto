@@ -1,7 +1,7 @@
 services:
   mcp:
-    image: mcp-carte-ign:main
-    container_name: mcp-carte-ign
+    image: mcp-carto:main
+    container_name: mcp-carto
     build:
       context: .
       args:
