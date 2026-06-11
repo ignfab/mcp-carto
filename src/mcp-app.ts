@@ -105,7 +105,7 @@ function handleHostContextChanged(ctx: McpUiHostContext) {
   }
 }
 
-const app = new App({ name: "Carte IGN", version: "1.0.0" });
+const app = new App({ name: "Carte IGN", version: __PACKAGE_VERSION__ });
 
 app.onteardown = async () => {
   if (map && map.getTarget()) {

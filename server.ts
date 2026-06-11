@@ -12,6 +12,7 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
+import packageJson from "./package.json" with { type: "json" };
 
 const DIST_DIR = import.meta.filename.endsWith(".ts")
   ? path.join(import.meta.dirname, "dist")
@@ -71,8 +72,8 @@ const outputSchema = inputSchema;
 
 export function createServer(): McpServer {
   const server = new McpServer({
-    name: "mcp-cart",
-    version: "1.0.0",
+    name: "mcp-carto",
+    version: packageJson.version,
   });
 
   registerAppResource(

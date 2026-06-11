@@ -1,12 +1,14 @@
 {
   "name": "mcp-carto",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "private": true,
   "description": "MCP App : carte OpenLayers avec fond Plan IGN v2 (WMTS Géoplateforme)",
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc --noEmit -p tsconfig.json && cross-env INPUT=mcp-app.html vite build && tsc -p tsconfig.build.json",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "check": "npm run build && npm test",
     "watch:ui": "cross-env INPUT=mcp-app.html vite build --watch",
     "serve": "tsx main.ts",
     "serve:stdio": "tsx main.ts --stdio",
@@ -14,7 +16,7 @@
     "start": "cross-env NODE_ENV=development npm run build && npm run serve"
   },
   "dependencies": {
-    "@modelcontextprotocol/ext-apps": "^1.7.2",
+    "@modelcontextprotocol/ext-apps": "^1.7.4",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
@@ -27,13 +29,13 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/file-saver": "^2.0.7",
-    "@types/node": "^25.9.0",
+    "@types/node": "^25.9.3",
     "@types/ol-ext": "npm:@siedlerchr/types-ol-ext@^3.6.8",
-    "concurrently": "^9.2.1",
+    "concurrently": "^10.0.3",
     "cross-env": "^10.1.0",
-    "tsx": "^4.22.2",
+    "tsx": "^4.22.4",
     "typescript": "^6.0.3",
-    "vite": "^8.0.13",
+    "vite": "^8.0.16",
     "vite-plugin-singlefile": "^2.3.3"
   }
 }
