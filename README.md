@@ -1,6 +1,6 @@
 # mcp-carto
 
-> **WARNING** : The whole code for this PoC is AI generated with Cursor and **not reviewed**.
+> **WARNING** : Part of the code for this PoC is AI generated with Cursor and **not reviewed**.
 
 An [MCP App](https://modelcontextprotocol.io/extensions/apps/overview) that embeds an interactive **Plan IGN v2** map (French national mapping) in hosts such as Cursor or Claude Desktop, using OpenLayers and the official [Géoplateforme](https://data.geopf.fr/) WMTS tiles.
 
