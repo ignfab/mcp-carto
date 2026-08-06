@@ -20,11 +20,19 @@ const DIST_DIR = import.meta.filename.endsWith(".ts")
 
 const resourceUri = "ui://mcp-carto/mcp-app.html";
 
+const allowedDataDomains = [
+  "https://data.geopf.fr",
+  "https://demo-geocontext.mut-dev.ign.fr",
+  "https://qlf-geollm.beta.ign.fr",
+  "https://geollm.beta.ign.fr",
+  "http://localhost:3002",
+];
+
 const cspMeta = {
   ui: {
     csp: {
-      connectDomains: ["https://data.geopf.fr"],
-      resourceDomains: ["https://data.geopf.fr"],
+      connectDomains: allowedDataDomains,
+      resourceDomains: allowedDataDomains,
     },
   },
 };
