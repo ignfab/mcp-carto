@@ -54,8 +54,15 @@ test("MCP app exposes its UI resource and map tool", async (t) => {
   assertRecord(content._meta);
   assertRecord(content._meta.ui);
   assertRecord(content._meta.ui.csp);
-  assert.deepEqual(content._meta.ui.csp.connectDomains, ["https://data.geopf.fr"]);
-  assert.deepEqual(content._meta.ui.csp.resourceDomains, ["https://data.geopf.fr"]);
+  const expectedCspDomains = [
+    "https://data.geopf.fr",
+    "https://demo-geocontext.mut-dev.ign.fr",
+    "https://qlf-geollm.beta.ign.fr",
+    "https://geollm.beta.ign.fr",
+    "http://localhost:3002",
+  ];
+  assert.deepEqual(content._meta.ui.csp.connectDomains, expectedCspDomains);
+  assert.deepEqual(content._meta.ui.csp.resourceDomains, expectedCspDomains);
 
   const tools = await client.listTools();
   const mapTool = tools.tools.find(({ name }) => name === TOOL_NAME);
