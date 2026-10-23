@@ -1,4 +1,4 @@
-FROM node:24-alpine AS builder
+FROM node:24.22.1-alpine AS builder
 
 WORKDIR /app
 COPY package*.json ./
@@ -7,7 +7,7 @@ COPY . .
 RUN npm run build
 RUN npm prune --omit=dev
 
-FROM node:24-alpine AS production
+FROM node:24.22.1-alpine AS production
 
 WORKDIR /app
 COPY --from=builder /app/dist ./dist
