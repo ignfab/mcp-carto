@@ -4,7 +4,7 @@ import { RESOURCE_MIME_TYPE, RESOURCE_URI_META_KEY } from "@modelcontextprotocol
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import packageJson from "../package.json" with { type: "json" };
-import { createServer } from "../server.ts";
+import { createServer, parseConnectDomains } from "../server.ts";
 
 const RESOURCE_URI = "ui://mcp-carto/mcp-app.html";
 const TOOL_NAME = "show_plan_ign_map";
@@ -54,15 +54,12 @@ test("MCP app exposes its UI resource and map tool", async (t) => {
   assertRecord(content._meta);
   assertRecord(content._meta.ui);
   assertRecord(content._meta.ui.csp);
-  const expectedCspDomains = [
-    "https://data.geopf.fr",
-    "https://demo-geocontext.mut-dev.ign.fr",
-    "https://qlf-geollm.beta.ign.fr",
-    "https://geollm.beta.ign.fr",
-    "http://localhost:3002",
-  ];
-  assert.deepEqual(content._meta.ui.csp.connectDomains, expectedCspDomains);
-  assert.deepEqual(content._meta.ui.csp.resourceDomains, expectedCspDomains);
+  // CSP_CONNECT_DOMAINS handling is covered by tests/csp.test.ts.
+  assert.deepEqual(
+    content._meta.ui.csp.connectDomains,
+    parseConnectDomains(process.env.CSP_CONNECT_DOMAINS),
+  );
+  assert.deepEqual(content._meta.ui.csp.resourceDomains, ["https://data.geopf.fr"]);
 
   const tools = await client.listTools();
   const mapTool = tools.tools.find(({ name }) => name === TOOL_NAME);

@@ -20,19 +20,39 @@ const DIST_DIR = import.meta.filename.endsWith(".ts")
 
 const resourceUri = "ui://mcp-carto/mcp-app.html";
 
-const allowedDataDomains = [
-  "https://data.geopf.fr",
-  "https://demo-geocontext.mut-dev.ign.fr",
-  "https://qlf-geollm.beta.ign.fr",
-  "https://geollm.beta.ign.fr",
-  "http://localhost:3002",
-];
+// The Geoplateforme serves the WMTS base map tiles and WFS data: always allowed.
+const GEOPF_DOMAIN = "https://data.geopf.fr";
+
+const ORIGIN_PATTERN = /^https?:\/\/[a-z0-9-]+(\.[a-z0-9-]+)*(:\d+)?$/i;
+
+/**
+ * Parses CSP_CONNECT_DOMAINS: origins (comma or space separated) the map view may
+ * fetch GeoJSON layers from, added to https://data.geopf.fr.
+ * Throws on an invalid origin so that a typo stops the server at startup
+ * instead of being silently blocked by the host CSP.
+ */
+export function parseConnectDomains(value: string | undefined): string[] {
+  const extra = (value ?? "")
+    .split(/[\s,]+/)
+    .filter(Boolean)
+    .map((entry) => entry.replace(/\/$/, ""));
+  for (const entry of extra) {
+    if (!ORIGIN_PATTERN.test(entry)) {
+      throw new Error(
+        `CSP_CONNECT_DOMAINS: invalid origin "${entry}" (expected http(s)://host[:port], e.g. https://example.com)`,
+      );
+    }
+  }
+  return [...new Set([GEOPF_DOMAIN, ...extra])];
+}
 
 const cspMeta = {
   ui: {
     csp: {
-      connectDomains: allowedDataDomains,
-      resourceDomains: allowedDataDomains,
+      // GeoJSON layers are loaded with fetch(): connect-src.
+      connectDomains: parseConnectDomains(process.env.CSP_CONNECT_DOMAINS),
+      // Base map tiles: img-src. Data hosts get no script/style/img access.
+      resourceDomains: [GEOPF_DOMAIN],
     },
   },
 };

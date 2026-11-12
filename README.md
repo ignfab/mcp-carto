@@ -31,7 +31,6 @@ npm run serve
 
 Default URL: `http://localhost:3001/mcp` (see [Parameters](#parameters) for customization)
 
-
 **Exemple with Claude Desktop** :
 
 ```json
@@ -39,10 +38,7 @@ Default URL: `http://localhost:3001/mcp` (see [Parameters](#parameters) for cust
   "mcpServers": {
     "carto": {
       "command": "npx",
-      "args": [
-        "mcp-remote",
-        "http://localhost:3001/mcp"
-      ]
+      "args": ["mcp-remote", "http://localhost:3001/mcp"]
     }
   }
 }
@@ -102,11 +98,13 @@ Example:
   "lon": 6.869322,
   "lat": 45.923713,
   "zoom": 12,
-  "layers": [{ 
-    "title": "Batiments",
-    "color": "red",
-    "data_url": "https://data.geopf.fr/wfs?service=WFS&request=GetFeature&typeName=BDTOPO_V3%3Abatiment&outputFormat=application%2Fjson&cql_filter=DWITHIN%28geometrie%2CPoint%2845.923713+6.869322%29%2C500%2Cmeters%29"
-  }]
+  "layers": [
+    {
+      "title": "Batiments",
+      "color": "red",
+      "data_url": "https://data.geopf.fr/wfs?service=WFS&request=GetFeature&typeName=BDTOPO_V3%3Abatiment&outputFormat=application%2Fjson&cql_filter=DWITHIN%28geometrie%2CPoint%2845.923713+6.869322%29%2C500%2Cmeters%29"
+    }
+  ]
 }
 ```
 
@@ -121,12 +119,13 @@ The UI resource URI is `ui://mcp-carto/mcp-app.html`.
 
 For advanced configuration.
 
-| Name                | Description                                                                             | Default |
-| ------------------- | --------------------------------------------------------------------------------------- | ------- |
-| `HTTP_PORT`         | TCP port used by the Streamable HTTP transport when running `npm run serve`.            | `3001`  |
-| `HTTP_MCP_ENDPOINT` | HTTP route path used by the Streamable HTTP transport. The value should start with `/`. | `/mcp`  |
+| Name                  | Description                                                                             | Default |
+| --------------------- | --------------------------------------------------------------------------------------- | ------- |
+| `HTTP_PORT`           | TCP port used by the Streamable HTTP transport when running `npm run serve`.            | `3001`  |
+| `HTTP_MCP_ENDPOINT`   | HTTP route path used by the Streamable HTTP transport. The value should start with `/`. | `/mcp`  |
+| `CSP_CONNECT_DOMAINS` | Extra origins the map may load GeoJSON layers from (see below).                         |         |
 
-
+`CSP_CONNECT_DOMAINS` is a comma or space separated list of origins (`http(s)://host[:port]`, no path, no wildcard). They are added to `https://data.geopf.fr` (always allowed) in the `connectDomains` of the app CSP sent to the MCP host, so that the map can fetch GeoJSON layers from them. An invalid origin stops the server at startup. Example: `CSP_CONNECT_DOMAINS=https://qlf-geollm.beta.ign.fr,http://localhost:3002`
 
 ## License
 
