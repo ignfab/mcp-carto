@@ -1,4 +1,4 @@
-FROM node:24.22.1-alpine AS builder
+FROM node:24.22.3-alpine AS builder
 
 WORKDIR /app
 COPY package*.json ./
@@ -7,7 +7,10 @@ COPY . .
 RUN npm run build
 RUN npm prune --omit=dev
 
-FROM node:24.22.1-alpine AS production
+FROM node:24.22.3-alpine AS production
+
+# Upgrade all installed packages to their latest versions to ensure security and stability.
+RUN apk upgrade --no-cache
 
 WORKDIR /app
 COPY --from=builder /app/dist ./dist
